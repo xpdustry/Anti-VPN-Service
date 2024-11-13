@@ -1,38 +1,37 @@
-apply plugin: "java"
+import com.xpdustry.toxopid.spec.ModMetadata
+import com.xpdustry.toxopid.spec.ModPlatform
 
-version "1.0"
+plugins {
+    id "java"
+    id "com.gradleup.shadow" version "8.3.5"
+    id "com.xpdustry.toxopid" version "4.1.0"
+}
 
-sourceCompatibility = 12
-targetCompatibility = 12
+def metadata = ModMetadata.fromJson(file("plugin.json"))
+group = "com.xpdustry"
+version = metadata.version
+description = metadata.description
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
     mavenCentral()
     maven { url "https://maven.xpdustry.com/mindustry" }
-    maven { url "https://www.jitpack.io" }
 }
 
-ext {
-    mindustryVersion = "v146"
+toxopid {
+    compileVersion = "v${metadata.minGameVersion}"
+    platforms = [ModPlatform.SERVER]
 }
 
 dependencies {
-    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
+    compileOnly toxopid.dependencies.arcCore
+    compileOnly toxopid.dependencies.mindustryCore
 }
 
-jar {
-    archiveFileName = "anti-vpn-service.jar"
-    // Get version from plugin json file
-    def json = new groovy.json.JsonSlurper().parseText(file("src/main/resources/plugin.json").text)
-    version = json.version
-    
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    
-    //copy the builded jar to the working directory
-    doLast {
-		copy {
-			from jar
-			into "."
-		}
-	}
+tasks.shadowJar {
+    archiveFileName = "${metadata.name}.jar"
 }
