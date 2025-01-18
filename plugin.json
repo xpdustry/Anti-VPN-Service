@@ -7,5 +7,6 @@
   "version": "1.2",
   "minGameVersion": "146",
   "java": true,
-  "repo": "xpdustry/Anti-VPN-Service"
+  "repo": "xpdustry/Anti-VPN-Service",
+  "softDependencies": [ "slf4md" ]
 }
