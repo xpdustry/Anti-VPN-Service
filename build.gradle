@@ -1,40 +1,39 @@
-apply plugin: "java"
+import com.xpdustry.toxopid.spec.ModMetadata
+import com.xpdustry.toxopid.spec.ModPlatform
 
-version "1.0"
+plugins {
+    id "java"
+    id "com.xpdustry.toxopid" version "4.1.0"
+}
 
-sourceCompatibility = 12
-targetCompatibility = 12
+def metadata = ModMetadata.fromJson(file("plugin.json"))
+group = "com.xpdustry"
+version = metadata.version
+description = metadata.description
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_12
+    targetCompatibility = JavaVersion.VERSION_12
+}
 
 repositories {
     mavenCentral()
-    maven { url "https://maven.xpdustry.com/mindustry" }
-    maven { url "https://www.jitpack.io" }
+    maven { url = "https://maven.xpdustry.com/mindustry" }
 }
 
-ext {
-    mindustryVersion = "v146"
+toxopid {
+    compileVersion = "v${metadata.minGameVersion}"
+    platforms = [ModPlatform.SERVER]
 }
 
 dependencies {
-    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
-    // To be compatible with the slf4md plugin
-    compileOnly "org.slf4j:slf4j-api:2.0.16" // according to slf4md-1.0.1
+    compileOnly toxopid.dependencies.arcCore
+    compileOnly toxopid.dependencies.mindustryCore
+    // For SLF4MD compatibility
+    compileOnly "org.slf4j:slf4j-api:2.0.16"
 }
 
-jar {
-    def json = new groovy.json.JsonSlurper().parseText(file("src/main/resources/plugin.json").text)
-    
-    archiveFileName = json.name + ".jar"
-    version = json.version
-    
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    
-    //copy the builded jar to the working directory
-    doLast {
-		copy {
-			from jar
-			into "."
-		}
-	}
+tasks.jar {
+    archiveFileName = "${metadata.name}.jar"
+    from file("plugin.json")
 }
